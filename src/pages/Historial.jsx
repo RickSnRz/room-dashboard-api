@@ -120,6 +120,9 @@ const Historial = () => {
 
       setOpen(false);
       fetchData();
+      toast.success("Registro actualizado", {
+        description: "El registro fue actualizado correctamente",
+      });
     } catch (err) {
       console.error(err);
       toast.error("Error al actualizar", {
@@ -201,6 +204,9 @@ const Historial = () => {
 
     const buffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
     saveAs(new Blob([buffer]), `Historial_${filter}.xlsx`);
+    toast.success("Excel exportado", {
+      description: `El historial de ${filter} fue exportado correctamente`,
+    });
   };
 
   return (
