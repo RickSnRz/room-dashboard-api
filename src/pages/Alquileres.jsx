@@ -307,7 +307,7 @@ export default function Alquileres() {
           <Card className="bg-zinc-900 border border-zinc-800 hover:border-blue-500/50 hover:shadow-lg hover:shadow-blue-500/10 transition-all duration-300">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm text-zinc-400">
-                Total Alquileres
+                Total Alquilere
               </CardTitle>
               <FileText className="w-5 h-5 text-blue-500" />
             </CardHeader>
