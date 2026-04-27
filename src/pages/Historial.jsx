@@ -6,6 +6,19 @@ import { Download, Pencil } from "lucide-react";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import { toast } from "sonner";
+import { MessageCircle } from "lucide-react";
+
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 import {
   Dialog,
@@ -96,7 +109,7 @@ const Historial = () => {
     Object.values(item)
       .join(" ")
       .toLowerCase()
-      .includes(searchTerm.toLowerCase())
+      .includes(searchTerm.toLowerCase()),
   );
 
   // 🔥 GET HAB NUMERO
@@ -139,7 +152,7 @@ const Historial = () => {
         {
           headers: { Authorization: `Bearer ${getToken()}` },
           responseType: "blob",
-        }
+        },
       );
 
       const url = window.URL.createObjectURL(new Blob([res.data]));
@@ -156,6 +169,50 @@ const Historial = () => {
       });
     }
   };
+
+  // 🔥 RECIBO
+  const handleDownloadRecibo = async (reciboId) => {
+    try {
+      const res = await axios.get(
+        `http://localhost:8080/api/recibos/${reciboId}/download`,
+        {
+          headers: { Authorization: `Bearer ${getToken()}` },
+          responseType: "blob",
+        },
+      );
+
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `recibo-${reciboId}.pdf`);
+      link.click();
+
+      toast.success("Recibo descargado", {
+        description: "El recibo fue descargado correctamente",
+      });
+    } catch {
+      toast.error("Error al descargar recibo");
+    }
+  };
+
+  const handleSendWhatsApp = async (reciboId) => {
+  try {
+    await axios.post(
+      `http://localhost:8080/api/whatsapp/enviar-recibo/${reciboId}`,
+      {},
+      {
+        headers: { Authorization: `Bearer ${getToken()}` },
+      }
+    );
+
+    toast.success("Mensaje enviado", {
+      description: "El recibo fue enviado por WhatsApp",
+    });
+  } catch (err) {
+    console.error(err);
+    toast.error("Error al enviar WhatsApp");
+  }
+};
 
   // 🔥 BADGE
   const getBadgeColor = (value) => {
@@ -213,7 +270,9 @@ const Historial = () => {
     <div className="p-6 text-white space-y-6">
       <div>
         <h1 className="text-3xl font-bold">Historial</h1>
-        <p className="text-zinc-400">Visualiza y gestiona toda la información</p>
+        <p className="text-zinc-400">
+          Visualiza y gestiona toda la información
+        </p>
       </div>
 
       <Card className="bg-zinc-900 border-zinc-800">
@@ -242,8 +301,7 @@ const Historial = () => {
 
             <Button
               onClick={exportToExcel}
-              className="bg-green-600 hover:bg-green-700"
-            >
+              className="bg-green-600 hover:bg-green-700">
               <Download size={16} />
               Excel
             </Button>
@@ -265,11 +323,8 @@ const Historial = () => {
                       </TableHead>
                     ))}
 
-                  {(filter === "Inquilino" ||
-                    filter === "Habitacion") && (
-                    <TableHead className="text-center">
-                      Acciones
-                    </TableHead>
+                  {(filter === "Inquilino" || filter === "Habitacion" || filter === "Recibo") && (
+                    <TableHead className="text-center">Acciones</TableHead>
                   )}
                 </TableRow>
               </TableHeader>
@@ -282,47 +337,76 @@ const Historial = () => {
                       .map(([key, val], idx) => (
                         <TableCell key={idx}>
                           {key.includes("estado") ? (
-                            <Badge className={getBadgeColor(val)}>
-                              {val}
-                            </Badge>
+                            <Badge className={getBadgeColor(val)}>{val}</Badge>
                           ) : key.includes("fecha") ? (
                             formatDate(val)
                           ) : key === "habitacion_id" ? (
                             `Hab. ${getNumeroHabitacion(val)}`
                           ) : typeof val === "object" && val !== null ? (
-                            val.nombre ||
-                            val.numero ||
-                            val.id ||
-                            "-"
+                            val.nombre || val.numero || val.id || "-"
                           ) : (
                             val
                           )}
                         </TableCell>
                       ))}
 
-                    {(filter === "Inquilino" ||
-                      filter === "Habitacion") && (
+                    {(filter === "Inquilino" || filter === "Habitacion" || filter === "Recibo") && (
                       <TableCell className="flex justify-center gap-2">
+                        {(filter === "Inquilino" ||
+                          filter === "Habitacion") && (
                         <Button
                           size="icon"
                           variant="ghost"
                           className="bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 transition hover:scale-105"
-                          onClick={() => handleEditClick(item)}
-                        >
+                          onClick={() => handleEditClick(item)}>
                           <Pencil size={16} />
                         </Button>
+                         )}
 
                         {filter === "Inquilino" && (
                           <Button
                             size="icon"
                             variant="ghost"
                             className="bg-zinc-800 hover:bg-blue-600/20 border border-zinc-700"
-                            onClick={() =>
-                              handleDownloadDNI(item.dni)
-                            }
-                          >
+                            onClick={() => handleDownloadDNI(item.dni)}>
                             <Download size={16} />
                           </Button>
+                        )}
+                        {filter === "Recibo" && (
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="bg-zinc-800 hover:bg-blue-600/20 border border-zinc-700"
+                            onClick={() => handleDownloadRecibo(item.id)}>
+                            <Download size={16} />
+                          </Button>
+                        )}
+                        {filter === "Recibo" && (
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="bg-zinc-800 hover:bg-green-600/20 border border-zinc-700"
+                              >
+                                <MessageCircle size={16} />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent className="bg-zinc-900 border border-zinc-800 text-white shadow-xl">
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Enviar Recibo por WhatsApp</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  ¿Estás seguro de que deseas enviar este recibo por WhatsApp?
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel className="bg-zinc-800 border border-zinc-700 hover:bg-zinc-700 text-white">Cancelar</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => handleSendWhatsApp(item.id)} className="bg-green-600 hover:bg-green-700 text-white border-0">
+                                  Enviar
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
                         )}
                       </TableCell>
                     )}
@@ -367,16 +451,10 @@ const Historial = () => {
           </div>
 
           <div className="flex justify-end gap-3">
-            <Button
-              variant="outline"
-              onClick={() => setOpen(false)}
-            >
+            <Button variant="outline" onClick={() => setOpen(false)}>
               Cancelar
             </Button>
-            <Button
-              className="bg-white text-black"
-              onClick={handleSave}
-            >
+            <Button className="bg-white text-black" onClick={handleSave}>
               Guardar
             </Button>
           </div>
