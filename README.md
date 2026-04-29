@@ -15,6 +15,7 @@ Aplicación web moderna para la gestión de alquiler de habitaciones, desarrolla
 * 🔔 Sonner (notificaciones elegantes)
 * 🎬 Framer Motion (animaciones suaves)
 * 📅 date-fns (manejo de fechas)
+* 📁 xlsx + file-saver (exportación a Excel)
 
 ---
 
@@ -130,6 +131,39 @@ http://localhost:8080/api
 ```
 
 ---
+
+## 🌐 Endpoints principales consumidos
+
+- `POST /auth/login`
+- `GET /api/inquilinos`
+- `POST /api/inquilinos`
+- `PUT /api/inquilinos/{id}`
+- `POST /api/inquilinos/{dni}/upload`
+- `GET /api/inquilinos/{dni}/download`
+
+- `GET /api/habitaciones`
+- `POST /api/habitaciones`
+- `PUT /api/habitaciones/{id}`
+
+- `GET /api/alquileres`
+- `POST /api/alquileres/crear`
+
+- `GET /api/recibos`
+- `POST /api/recibos?inquilinoId={id}&habitacionId={id}`
+- `POST /api/recibos/{id}/generar`
+- `GET /api/recibos/{id}/download`
+
+- `POST /api/whatsapp/enviar-recibo/{id}`
+
+## 🧭 Rutas de la aplicación
+
+- `/` → Login
+- `/mainpage/home` → Dashboard
+- `/mainpage/inquilinos`
+- `/mainpage/habitaciones`
+- `/mainpage/alquileres`
+- `/mainpage/recibos`
+- `/mainpage/historial`
 
 ## 📸 Vista general
 
